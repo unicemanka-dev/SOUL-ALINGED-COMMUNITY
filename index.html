@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Soul Realigned | Sanctuary</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Dancing+Script:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        sacred: {
+                            gold: '#D4A017',
+                            cream: '#F5E6BE',
+                            charcoal: '#1A1A1A',
+                            orange: '#E8711A',
+                            green: '#2D5A27',
+                            purple: '#4B0082'
+                        }
+                    },
+                    fontFamily: {
+                        cinzel: ['Cinzel', 'serif'],
+                        dancing: ['Dancing Script', 'cursive'],
+                        sans: ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #1A1A1A; color: #F5E6BE; -webkit-tap-highlight-color: transparent; overflow-x: hidden; }
+        .glass { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .safe-top { padding-top: env(safe-area-inset-top); }
+        .animate-in { animation: slideIn 0.4s ease-out forwards; }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+        textarea, input { outline: none !important; }
+    </style>
+</head>
+<body class="font-sans selection:bg-sacred-orange/30">
+
+    <header class="fixed top-0 left-0 right-0 z-50 glass px-6 py-4 flex justify-between items-center safe-top">
+        <div class="font-cinzel text-sacred-gold tracking-widest font-bold text-sm">SOUL REALIGNED</div>
+        <div class="flex gap-4 items-center">
+            <button onclick="toggleLang()" id="langBtn" class="text-[10px] font-bold border border-sacred-gold/30 px-2 py-1 rounded hover:bg-sacred-gold/10 transition-colors">EN</button>
+            <i data-lucide="menu" class="text-sacred-gold cursor-pointer" onclick="alert('Menu functionality: Contact & Settings')"></i>
+        </div>
+    </header>
+
+    <main id="app" class="pt-20 pb-32 max-w-xl mx-auto min-h-screen">
+        </main>
+
+    <nav class="fixed bottom-0 left-0 right-0 glass h-20 flex justify-around items-center px-4 z-40 border-t border-white/5">
+        <button onclick="setView('home')" class="nav-link flex flex-col items-center gap-1 opacity-40 transition-all" id="nav-home">
+            <i data-lucide="home" size="20"></i>
+            <span class="text-[10px] uppercase font-bold tracking-tighter">Home</span>
+        </button>
+        <button onclick="setView('gates')" class="nav-link flex flex-col items-center gap-1 opacity-40 transition-all" id="nav-gates">
+            <i data-lucide="layout-grid" size="20"></i>
+            <span class="text-[10px] uppercase font-bold tracking-tighter">Gates</span>
+        </button>
+        <button onclick="setView('progress')" class="nav-link flex flex-col items-center gap-1 opacity-40 transition-all" id="nav-progress">
+            <i data-lucide="flame" size="20"></i>
+            <span class="text-[10px] uppercase font-bold tracking-tighter">Growth</span>
+        </button>
+        <button onclick="setView('resources')" class="nav-link flex flex-col items-center gap-1 opacity-40 transition-all" id="nav-resources">
+            <i data-lucide="library" size="20"></i>
+            <span class="text-[10px] uppercase font-bold tracking-tighter">Library</span>
+        </button>
+    </nav>
+
+    <button onclick="setView('practice')" class="fixed bottom-24 right-6 w-14 h-14 rounded-full flex items-center justify-center shadow-2xl z-40 bg-gradient-to-br from-sacred-orange to-sacred-gold active:scale-90 transition-transform">
+        <span class="text-2xl">🙏</span>
+    </button>
+
+    <script>
+        // --- DATA ENGINE ---
+        const GATES_DATA = [
+            { id: 'eye', icon: 'eye', color: '#4B0082', name: { en: 'Eye Gate', fr: 'Porte des Yeux' }, exhortation: { en: 'Guard what you behold, for your eyes are the lamp of your body.', fr: 'Gardez ce que vous contemplez, car vos yeux sont la lampe de votre corps.' }, practice: { en: 'Visual Fast: Avoid digital screens for 1 hour.', fr: 'Jeûne Visuel : Évitez les écrans pendant 1 heure.' }, scriptures: [{ ref: 'Psalm 101:3', text: { en: 'I will set no wicked thing before mine eyes.', fr: 'Je ne mettrai rien de mauvais devant mes yeux.' } }], books: [{title: "The Power of Vision", author: "M. Liberator"}] },
+            { id: 'ear', icon: 'ear', color: '#D4A017', name: { en: 'Ear Gate', fr: 'Porte des Oreilles' }, exhortation: { en: 'Faith comes by hearing. Be careful what you let dwell in your ears.', fr: 'La foi vient de ce que l\'on entend. Faites attention à ce que vous laissez habiter vos oreilles.' }, practice: { en: 'Listen to 15 minutes of worship in total silence.', fr: 'Écoutez 15 minutes d\'adoration dans un silence total.' }, scriptures: [{ ref: 'Romans 10:17', text: { en: 'Faith comes by hearing the word of God.', fr: 'La foi vient de l\'audition de la parole de Dieu.' } }], books: [{title: "Quiet Waters", author: "S. Realigned"}] },
+            { id: 'mouth', icon: 'message-circle', color: '#E8711A', name: { en: 'Mouth Gate', fr: 'Porte de la Bouche' }, exhortation: { en: 'Life and death are in the power of the tongue.', fr: 'La vie et la mort sont au pouvoir de la langue.' }, practice: { en: 'Speak only words of blessing today.', fr: 'Ne prononcez que des paroles de bénédiction aujourd\'hui.' }, scriptures: [{ ref: 'Proverbs 18:21', text: { en: 'Death and life are in the power of the tongue.', fr: 'La mort et la vie sont au pouvoir de la langue.' } }], books: [{title: "Words of Life", author: "J. Stone"}] }
+        ];
+
+        const TRANSLATIONS = {
+            en: { welcome: "Sacred Invocation", daily_verse: "Daily Verse", next: "Continue", mark_done: "Mark Complete", save: "Save Reflection", practice_title: "Daily Alignment", streak_text: "Days of Alignment" },
+            fr: { welcome: "Invocation Sacrée", daily_verse: "Verset du Jour", next: "Continuer", mark_done: "Marquer Terminé", save: "Enregistrer", practice_title: "Alignement Quotidien", streak_text: "Jours d'Alignement" }
+        };
+
+        // --- STATE MANAGEMENT ---
+        let state = {
+            view: 'home',
+            lang: 'en',
+            currentPracticeStep: 1,
+            streak: 15,
+            reflection: '',
+            gratitude: ['', '', ''],
+            badges: ['first_step', 'guardian']
+        };
+
+        // --- CORE LOGIC ---
+        function setView(viewName) {
+            state.view = viewName;
+            if(viewName !== 'practice') state.currentPracticeStep = 1;
+            render();
+            updateNavUI();
+            window.scrollTo(0,0);
+        }
+
+        function toggleLang() {
+            state.lang = state.lang === 'en' ? 'fr' : 'en';
+            document.getElementById('langBtn').innerText = state.lang.toUpperCase();
+            render();
+        }
+
+        function updateNavUI() {
+            document.querySelectorAll('.nav-link').forEach(link => link.classList.add('opacity-40'));
+            const active = document.getElementById(`nav-${state.view}`);
+            if (active) active.classList.remove('opacity-40');
+        }
+
+        // --- VIEW RENDERERS ---
+        const renderers = {
+            home: () => `
+                <div class="p-6 space-y-8 animate-in">
+                    <header>
+                        <h1 class="text-4xl font-cinzel font-bold text-sacred-gold">${state.lang === 'en' ? 'Shalom' : 'Paix'}</h1>
+                        <p class="opacity-50 text-sm tracking-widest uppercase">Soul Sanctuary</p>
+                    </header>
+                    <div class="glass p-8 rounded-[40px] border-sacred-gold/20 shadow-2xl relative overflow-hidden">
+                        <div class="absolute -right-4 -top-4 opacity-10"><i data-lucide="sun" size="120"></i></div>
+                        <h4 class="text-[10px] uppercase tracking-[0.3em] text-sacred-gold mb-4">${TRANSLATIONS[state.lang].daily_verse}</h4>
+                        <p class="text-xl font-bold italic leading-tight">"Be still, and know that I am God."</p>
+                        <p class="mt-4 text-xs font-cinzel opacity-40">— Psalm 46:10</p>
+                    </div>
+                    <div class="grid grid-cols-1 gap-4">
+                        <button onclick="setView('practice')" class="w-full bg-sacred-gold text-sacred-charcoal py-6 rounded-3xl font-bold uppercase tracking-widest flex items-center justify-center gap-3">
+                            <i data-lucide="play" size="18"></i> Start Daily Practice
+                        </button>
+                    </div>
+                </div>
+            `,
+
+            gates: () => `
+                <div class="p-6 animate-in">
+                    <h2 class="text-2xl font-bold text-sacred-gold mb-8 uppercase tracking-widest">The Soul Gates</h2>
+                    <div class="grid grid-cols-1 gap-4">
+                        ${GATES_DATA.map(gate => `
+                            <div onclick="setView('gate-${gate.id}')" class="glass p-6 rounded-3xl flex items-center justify-between cursor-pointer border-white/5 active:bg-white/10 transition-all">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-12 h-12 rounded-2xl flex items-center justify-center" style="background: ${gate.color}20; color: ${gate.color}">
+                                        <i data-lucide="${gate.icon}"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="font-bold">${gate.name[state.lang]}</h3>
+                                        <p class="text-[10px] opacity-40 uppercase tracking-widest">Active Guardian</p>
+                                    </div>
+                                </div>
+                                <i data-lucide="chevron-right" class="opacity-20"></i>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `,
+
+            gateDetail: (id) => {
+                const gate = GATES_DATA.find(g => g.id === id);
+                return `
+                <div class="animate-in pb-20">
+                    <div class="relative h-56 flex flex-col items-center justify-center text-center p-6" style="background: ${gate.color}">
+                        <button onclick="setView('gates')" class="absolute top-6 left-6 p-2 bg-black/20 rounded-full"><i data-lucide="chevron-left"></i></button>
+                        <i data-lucide="${gate.icon}" size="48" class="text-sacred-gold mb-2"></i>
+                        <h2 class="text-3xl font-bold uppercase tracking-tighter">${gate.name[state.lang]}</h2>
+                        <p class="font-dancing text-sacred-cream/70">${gate.name[state.lang === 'en' ? 'fr' : 'en']}</p>
+                    </div>
+                    <div class="p-6 space-y-8">
+                        <div class="glass p-6 rounded-3xl">
+                            <h4 class="font-cinzel text-xs text-sacred-gold uppercase tracking-widest mb-4 flex items-center gap-2"><i data-lucide="sparkles" size="14"></i> Exhortation</h4>
+                            <p class="text-lg leading-relaxed">${gate.exhortation[state.lang]}</p>
+                        </div>
+                        <div class="space-y-4">
+                            <h4 class="font-cinzel text-xs text-sacred-gold uppercase tracking-widest">Scriptures</h4>
+                            ${gate.scriptures.map(s => `
+                                <div class="bg-white/5 border border-white/10 p-5 rounded-2xl">
+                                    <p class="text-xs font-bold text-sacred-gold mb-2 font-cinzel">${s.ref}</p>
+                                    <p class="text-md opacity-80 italic">"${s.text[state.lang]}"</p>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div class="bg-sacred-orange/10 border border-sacred-orange/30 p-6 rounded-3xl">
+                            <h4 class="font-cinzel text-xs text-sacred-orange uppercase tracking-widest mb-4">Practice</h4>
+                            <p class="text-lg font-bold text-sacred-orange mb-6">${gate.practice[state.lang]}</p>
+                            <button onclick="setView('home')" class="w-full bg-sacred-orange py-4 rounded-xl font-bold uppercase text-xs">Mark as Observed</button>
+                        </div>
+                    </div>
+                </div>`;
+            },
+
+            practice: () => {
+                const steps = [
+                    { id: 1, icon: 'sun', title: 'Invocation' },
+                    { id: 2, icon: 'book-open', title: 'Scripture' },
+                    { id: 3, icon: 'pen-tool', title: 'Reflection' },
+                    { id: 4, icon: 'heart', title: 'Gratitude' }
+                ];
+                
+                let content = '';
+                if(state.currentPracticeStep === 1) {
+                    content = `
+                        <i data-lucide="sun" size="48" class="text-sacred-gold mb-8 animate-pulse"></i>
+                        <h2 class="text-2xl font-cinzel text-sacred-gold mb-6 uppercase tracking-widest">${TRANSLATIONS[state.lang].welcome}</h2>
+                        <p class="text-lg italic glass p-8 rounded-[40px] border-sacred-orange/20 max-w-sm mb-10">
+                            "Lord, I present my soul to You today. Guard every gate. Let my being be aligned with Your Word. Amen."
+                        </p>
+                        <button onclick="nextPracticeStep()" class="bg-sacred-orange px-12 py-4 rounded-2xl font-bold uppercase text-xs tracking-widest shadow-xl">I Have Prayed This</button>
+                    `;
+                } else if (state.currentPracticeStep === 2) {
+                    content = `
+                        <i data-lucide="book-open" size="48" class="text-sacred-gold mb-6"></i>
+                        <div class="bg-gradient-to-br from-sacred-gold to-sacred-orange p-8 rounded-[40px] text-sacred-charcoal shadow-2xl mb-10 max-w-sm">
+                            <p class="text-xl font-bold italic">"Thy word is a lamp unto my feet, and a light unto my path."</p>
+                            <p class="mt-4 font-cinzel text-xs">— Psalm 119:105</p>
+                        </div>
+                        <button onclick="nextPracticeStep()" class="w-full max-w-xs bg-sacred-charcoal border border-sacred-gold py-4 rounded-2xl font-bold uppercase text-xs tracking-widest">${TRANSLATIONS[state.lang].next}</button>
+                    `;
+                } else if (state.currentPracticeStep === 3) {
+                    content = `
+                        <h3 class="text-lg font-bold mb-6">${state.lang === 'en' ? "Today's Reflection" : "Réflexion du Jour"}</h3>
+                        <textarea oninput="state.reflection = this.value" placeholder="Write what is on your heart..." class="w-full max-w-sm h-48 bg-white/5 border border-white/10 rounded-[32px] p-6 text-sm focus:border-sacred-orange transition-all mb-6">${state.reflection}</textarea>
+                        <button onclick="nextPracticeStep()" class="w-full max-w-xs py-4 bg-sacred-orange rounded-2xl font-bold uppercase text-xs tracking-widest">${TRANSLATIONS[state.lang].save}</button>
+                    `;
+                } else {
+                    content = `
+                        <i data-lucide="check-circle" size="64" class="text-sacred-green mb-6"></i>
+                        <h3 class="text-2xl font-cinzel text-sacred-gold mb-4 uppercase">Amen.</h3>
+                        <p class="opacity-60 mb-10 max-w-xs italic">"Your soul is growing strong. Go in peace and guard your gates."</p>
+                        <button onclick="setView('home')" class="w-full max-w-xs h-16 bg-gradient-to-r from-sacred-green to-sacred-orange rounded-2xl font-bold uppercase tracking-widest shadow-2xl">Complete Journey</button>
+                    `;
+                }
+
+                return `
+                <div class="p-6 min-h-[80vh] flex flex-col items-center justify-center text-center animate-in">
+                    <div class="flex gap-3 mb-12">
+                        ${steps.map(s => `<div class="w-2 h-2 rounded-full transition-all duration-500 ${state.currentPracticeStep >= s.id ? 'bg-sacred-orange scale-150' : 'bg-white/10'}"></div>`).join('')}
+                    </div>
+                    ${content}
+                </div>`;
+            },
+
+            progress: () => `
+                <div class="p-6 space-y-8 animate-in">
+                    <h2 class="text-2xl font-bold text-sacred-gold uppercase tracking-widest">Growth Tracking</h2>
+                    <div class="bg-gradient-to-br from-sacred-green/40 to-sacred-charcoal p-8 rounded-[40px] border border-sacred-green/30 shadow-2xl relative overflow-hidden">
+                         <i data-lucide="flame" class="absolute -bottom-6 -right-6 text-sacred-orange opacity-20" size="140"></i>
+                         <div class="relative z-10">
+                            <div class="flex items-center gap-3 mb-2">
+                                <i data-lucide="flame" class="text-sacred-orange" size="32"></i>
+                                <span class="text-4xl font-bold">${state.streak}</span>
+                            </div>
+                            <p class="text-sm text-sacred-cream/60 font-bold uppercase tracking-widest">${TRANSLATIONS[state.lang].streak_text}</p>
+                         </div>
+                    </div>
+                    <div>
+                        <h4 class="font-cinzel text-xs text-sacred-gold uppercase tracking-widest mb-6">Unlocked Badges</h4>
+                        <div class="flex gap-6 overflow-x-auto pb-4 no-scrollbar">
+                            <div class="flex-shrink-0 flex flex-col items-center gap-2">
+                                <div class="w-16 h-16 rounded-full border-2 border-sacred-gold flex items-center justify-center text-sacred-gold"><i data-lucide="star"></i></div>
+                                <span class="text-[9px] font-bold uppercase">First Step</span>
+                            </div>
+                            <div class="flex-shrink-0 flex flex-col items-center gap-2">
+                                <div class="w-16 h-16 rounded-full border-2 border-sacred-orange flex items-center justify-center text-sacred-orange"><i data-lucide="shield"></i></div>
+                                <span class="text-[9px] font-bold uppercase">Guardian</span>
+                            </div>
+                            <div class="flex-shrink-0 flex flex-col items-center gap-2 opacity-20 grayscale">
+                                <div class="w-16 h-16 rounded-full border-2 border-white flex items-center justify-center"><i data-lucide="award"></i></div>
+                                <span class="text-[9px] font-bold uppercase">Master</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `,
+
+            resources: () => `
+                <div class="p-6 space-y-8 animate-in">
+                    <h2 class="text-2xl font-bold text-sacred-gold uppercase tracking-widest">Sanctuary Library</h2>
+                    <div class="grid grid-cols-2 gap-4">
+                        ${GATES_DATA.map(gate => `
+                            <div class="bg-white/5 p-4 rounded-3xl border border-white/5">
+                                <div class="w-full aspect-[3/4] bg-sacred-charcoal rounded-2xl mb-4 border-l-4 shadow-xl" style="border-color: ${gate.color}"></div>
+                                <h5 class="text-xs font-bold leading-tight line-clamp-2">${gate.books[0].title}</h5>
+                                <p class="text-[9px] opacity-40 uppercase mt-1">${gate.books[0].author}</p>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `
+        };
+
+        function nextPracticeStep() {
+            state.currentPracticeStep++;
+            render();
+        }
+
+        function render() {
+            const app = document.getElementById('app');
+            if (state.view === 'home') app.innerHTML = renderers.home();
+            else if (state.view === 'gates') app.innerHTML = renderers.gates();
+            else if (state.view === 'practice') app.innerHTML = renderers.practice();
+            else if (state.view === 'progress') app.innerHTML = renderers.progress();
+            else if (state.view === 'resources') app.innerHTML = renderers.resources();
+            else if (state.view.startsWith('gate-')) app.innerHTML = renderers.gateDetail(state.view.split('-')[1]);
+            
+            lucide.createIcons();
+        }
+
+        // --- INIT ---
+        window.onload = () => {
+            render();
+            updateNavUI();
+        };
+    </script>
+</body>
+</html>
